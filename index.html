@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Executive Planner | Деловой недельный график</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0c0f;
+            background: linear-gradient(135deg, #0c0f13 0%, #0a0c0f 100%);
+            margin: 0;
+            padding: 32px 24px;
+            color: #e8edf2;
+        }
+
+        .planner-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            background: #111417;
+            border-radius: 20px;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            overflow-x: auto;
+            padding: 24px 20px 28px 20px;
+            transition: all 0.2s;
+            border: 1px solid #2a2f36;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            padding: 0 8px 16px 8px;
+            border-bottom: 1px solid #2a2f36;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            color: #f0f4fa;
+            font-family: 'Segoe UI', 'Inter', monospace;
+            text-transform: uppercase;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #b0b8c5 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .print-btn {
+            background: #1e2229;
+            border: 1px solid #3a4049;
+            color: #eef2f8;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            backdrop-filter: blur(4px);
+            letter-spacing: 0.3px;
+        }
+
+        .print-btn:hover {
+            background: #2c323c;
+            border-color: #5a626f;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .print-btn:active {
+            transform: translateY(1px);
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            background: #12161c;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid #262b33;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            border: 1px solid #262b33;
+            padding: 12px 8px;
+            vertical-align: top;
+            min-width: 95px;
+            transition: background 0.12s ease;
+        }
+
+        .schedule-table th:first-child,
+        .schedule-table td:first-child {
+            background: #0e1117;
+            font-weight: 600;
+            text-align: center;
+            color: #cbd5e6;
+            width: 108px;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #0b0e12;
+            border-right: 1px solid #2a2f38;
+            font-family: 'JetBrains Mono', 'SF Mono', monospace;
+            font-size: 11.5px;
+            letter-spacing: 0.2px;
+        }
+
+        .schedule-table th {
+            background: #151b23;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 14px 8px;
+            color: #cfddee;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #2d333c;
+            text-transform: uppercase;
+            font-family: 'Segoe UI', 'Inter', sans-serif;
+        }
+
+        .data-cell {
+            background-color: #11161c;
+            cursor: pointer;
+            min-height: 68px;
+            word-break: break-word;
+            white-space: pre-wrap;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #e2e8f0;
+            transition: all 0.1s;
+            max-width: 200px;
+        }
+
+        .data-cell:hover {
+            background-color: #1a212a;
+            box-shadow: inset 0 0 0 1px #3a424e;
+        }
+
+        .edit-textarea {
+            width: 100%;
+            min-height: 90px;
+            border: 1px solid #4a5362;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Segoe UI', 'SF Mono', monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            outline: none;
+            background: #1a2028;
+            color: #f0f4fa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            transition: 0.12s;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .edit-textarea:focus {
+            border-color: #6f7b8c;
+            background: #1e2530;
+            box-shadow: 0 0 0 2px rgba(100, 120, 150, 0.3);
+        }
+
+        .cell-display {
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.45;
+            padding: 2px 2px;
+            font-size: 0.8rem;
+        }
+
+        .cell-display.empty-cell {
+            opacity: 0.45;
+            font-style: normal;
+            color: #8f9bb0;
+            letter-spacing: 0.2px;
+        }
+
+        footer {
+            margin-top: 24px;
+            font-size: 11px;
+            text-align: center;
+            color: #6e7a8c;
+            background: #0c0f14;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 8px 20px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+            border: 1px solid #23282f;
+            font-family: monospace;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .print-btn {
+                display: none;
+            }
+
+            .planner-container {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                border-radius: 0;
+                max-width: 100%;
+                background: white;
+                border: none;
+            }
+
+            .schedule-table td,
+            .schedule-table th {
+                border: 1px solid #aaa !important;
+                break-inside: avoid;
+            }
+
+            .data-cell {
+                background-color: white !important;
+                color: black;
+            }
+
+            .edit-textarea {
+                border: 1px solid #ccc !important;
+                background: white;
+                color: black;
+                box-shadow: none;
+            }
+
+            .header {
+                border-bottom: 1px solid #ccc;
+            }
+
+            h1 {
+                color: #000;
+                background: none;
+                -webkit-background-clip: unset;
+            }
+
+            .schedule-table th:first-child,
+            .schedule-table td:first-child {
+                background: #f5f5f5 !important;
+                color: black;
+            }
+
+            .schedule-table th {
+                background: #e5e5e5 !important;
+                color: black;
+                border-bottom: 1px solid #aaa;
+            }
+        }
+
+        @media (max-width: 860px) {
+            .schedule-table th,
+            .schedule-table td {
+                min-width: 85px;
+                padding: 8px 5px;
+            }
+
+            .schedule-table td:first-child {
+                font-size: 0.7rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .print-btn {
+                padding: 6px 16px;
+                font-size: 0.8rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+            background: #14181f;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0c0f14;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a424e;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #556070;
+        }
+
+        ::selection {
+            background: #3a506c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="planner-container">
+    <div class="header">
+        <h1>WEEK EXECUTIVE</h1>
+        <button class="print-btn" id="printTableBtn">Print</button>
+    </div>
+
+    <div style="overflow-x: auto; border-radius: 12px;">
+        <table class="schedule-table" id="weekPlannerTable">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <footer>▸ ДВОЙНОЙ КЛИК ПО ЯЧЕЙКЕ — РЕДАКТИРОВАНИЕ ▸ ДАННЫЕ АВТОСОХРАНЕНИЕ ▸ ДЕЛОВОЙ РЕЖИМ ▸ GENERATED BY AI</footer>
+</div>
+
+<script>
+    const DAYS = [
+        "ПОНЕДЕЛЬНИК", 
+        "ВТОРНИК", 
+        "СРЕДА", 
+        "ЧЕТВЕРГ", 
+        "ПЯТНИЦА", 
+        "СУББОТА", 
+        "ВОСКРЕСЕНЬЕ"
+    ];
+    
+    function buildTimeSlots() {
+        const slots = [];
+        for (let hour = 0; hour < 24; hour++) {
+            const startHour = hour;
+            const endHour = (hour + 1) % 24;
+            const startStr = `${startHour.toString().padStart(2, '0')}:00`;
+            const endStr = `${endHour.toString().padStart(2, '0')}:00`;
+            slots.push(`${startStr} — ${endStr}`);
+        }
+        slots.push(`Комментарий`);
+        return slots;
+    }
+    
+    const TIME_SLOTS = buildTimeSlots();
+    const STORAGE_KEY = "business_planner_dark_v2";
+    let plannerData = {};
+    
+    function loadDataFromStorage() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (parsed && typeof parsed === 'object') {
+                    for (let d = 0; d < DAYS.length; d++) {
+                        if (!parsed[d] || !Array.isArray(parsed[d])) {
+                            parsed[d] = new Array(TIME_SLOTS.length).fill("");
+                        } else if (parsed[d].length !== TIME_SLOTS.length) {
+                            const newArr = new Array(TIME_SLOTS.length).fill("");
+                            for (let i = 0; i < Math.min(parsed[d].length, TIME_SLOTS.length); i++) {
+                                if (parsed[d][i] !== undefined) newArr[i] = parsed[d][i];
+                            }
+                            parsed[d] = newArr;
+                        }
+                    }
+                    plannerData = parsed;
+                } else {
+                    initEmptyData();
+                }
+            } catch(e) {
+                console.warn("Storage parse error", e);
+                initEmptyData();
+            }
+        } else {
+            initEmptyData();
+        }
+        for (let d = 0; d < DAYS.length; d++) {
+            if (!plannerData[d] || !Array.isArray(plannerData[d])) {
+                plannerData[d] = new Array(TIME_SLOTS.length).fill("");
+            }
+        }
+    }
+    
+    function initEmptyData() {
+        plannerData = {};
+        for (let i = 0; i < DAYS.length; i++) {
+            plannerData[i] = new Array(TIME_SLOTS.length).fill("");
+        }
+    }
+    
+    function persistData() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(plannerData));
+        } catch(e) {
+            console.error("LocalStorage save failed", e);
+        }
+    }
+    
+    function updateCellValue(dayIndex, rowIndex, newText) {
+        if (!plannerData[dayIndex]) {
+            plannerData[dayIndex] = new Array(TIME_SLOTS.length).fill("");
+        }
+        plannerData[dayIndex][rowIndex] = newText;
+        persistData();
+        renderSingleCell(dayIndex, rowIndex, newText);
+    }
+    
+    function renderSingleCell(dayIndex, rowIndex, text) {
+        const cell = document.getElementById(`exec_cell_${dayIndex}_${rowIndex}`);
+        if (!cell) return;
+        
+        cell.innerHTML = "";
+        const displayDiv = document.createElement('div');
+        displayDiv.className = 'cell-display';
+        displayDiv.style.whiteSpace = 'pre-wrap';
+        displayDiv.style.wordBreak = 'break-word';
+        
+        const cleanText = (text && text.trim() !== "") ? text : "";
+        if (!cleanText) {
+            displayDiv.innerText = "—";
+            displayDiv.classList.add('empty-cell');
+            displayDiv.style.opacity = '0.5';
+            displayDiv.style.fontStyle = 'normal';
+        } else {
+            displayDiv.innerText = cleanText;
+            displayDiv.classList.remove('empty-cell');
+            displayDiv.style.opacity = '1';
+        }
+        cell.appendChild(displayDiv);
+        attachDoubleClickHandler(cell, dayIndex, rowIndex);
+    }
+    
+    function attachDoubleClickHandler(cellElement, dayIdx, rowIdx) {
+        if (cellElement._dblHandler) {
+            cellElement.removeEventListener('dblclick', cellElement._dblHandler);
+        }
+        const handler = function(e) {
+            e.stopPropagation();
+            activateTextareaEdit(dayIdx, rowIdx, cellElement);
+        };
+        cellElement.addEventListener('dblclick', handler);
+        cellElement._dblHandler = handler;
+    }
+    
+    function activateTextareaEdit(dayIndex, rowIndex, cellElement) {
+        if (cellElement.querySelector('.edit-textarea')) return;
+        
+        const currentText = (plannerData[dayIndex] && plannerData[dayIndex][rowIndex]) ? plannerData[dayIndex][rowIndex] : "";
+        
+        const textarea = document.createElement('textarea');
+        textarea.className = 'edit-textarea';
+        textarea.value = currentText;
+        textarea.placeholder = "Введите задачу / заметку...";
+        
+        cellElement.innerHTML = '';
+        cellElement.appendChild(textarea);
+        textarea.focus();
+        
+        function saveAndExit() {
+            const newValue = textarea.value;
+            if (!plannerData[dayIndex]) {
+                plannerData[dayIndex] = new Array(TIME_SLOTS.length).fill("");
+            }
+            if (plannerData[dayIndex][rowIndex] !== newValue) {
+                plannerData[dayIndex][rowIndex] = newValue;
+                persistData();
+            }
+            renderSingleCell(dayIndex, rowIndex, newValue);
+        }
+        
+        const blurHandler = () => saveAndExit();
+        textarea.addEventListener('blur', blurHandler);
+        
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                renderSingleCell(dayIndex, rowIndex, currentText);
+                textarea.removeEventListener('blur', blurHandler);
+            }
+            if ((e.key === 'Enter') || (e.metaKey && e.key === 'Enter')) {
+                e.preventDefault();
+                saveAndExit();
+            }
+        });
+    }
+    
+    function buildFullTable() {
+        const thead = document.getElementById('tableHeader');
+        const tbody = document.getElementById('tableBody');
+        
+        let headerHtml = '<tr><th>⏱️ ВРЕМЯ</th>';
+        for (let day of DAYS) {
+            headerHtml += `<th>${day}</th>`;
+        }
+        headerHtml += '</tr>';
+        thead.innerHTML = headerHtml;
+        tbody.innerHTML = '';
+        
+        for (let rowIdx = 0; rowIdx < TIME_SLOTS.length; rowIdx++) {
+            const timeLabel = TIME_SLOTS[rowIdx];
+            const tr = document.createElement('tr');
+            
+            const tdTime = document.createElement('td');
+            tdTime.textContent = timeLabel;
+            tdTime.style.fontWeight = '500';
+            tdTime.style.fontFamily = "'JetBrains Mono', monospace";
+            tdTime.style.fontSize = '11px';
+            tdTime.style.letterSpacing = '0.2px';
+            tr.appendChild(tdTime);
+            
+            for (let dayIdx = 0; dayIdx < DAYS.length; dayIdx++) {
+                const td = document.createElement('td');
+                td.className = 'data-cell';
+                td.id = `exec_cell_${dayIdx}_${rowIdx}`;
+                td.setAttribute('data-day', dayIdx);
+                td.setAttribute('data-row', rowIdx);
+                
+                const cellText = (plannerData[dayIdx] && plannerData[dayIdx][rowIdx]) ? plannerData[dayIdx][rowIdx] : "";
+                const displayDiv = document.createElement('div');
+                displayDiv.className = 'cell-display';
+                displayDiv.style.whiteSpace = 'pre-wrap';
+                
+                if (!cellText || cellText.trim() === "") {
+                    displayDiv.innerText = "—";
+                    displayDiv.classList.add('empty-cell');
+                    displayDiv.style.opacity = '0.45';
+                } else {
+                    displayDiv.innerText = cellText;
+                    displayDiv.classList.remove('empty-cell');
+                }
+                td.appendChild(displayDiv);
+                tr.appendChild(td);
+                attachDoubleClickHandler(td, dayIdx, rowIdx);
+            }
+            tbody.appendChild(tr);
+        }
+    }
+    
+    function refreshAllHandlersAndEmptyState() {
+        for (let d = 0; d < DAYS.length; d++) {
+            for (let r = 0; r < TIME_SLOTS.length; r++) {
+                const cell = document.getElementById(`exec_cell_${d}_${r}`);
+                if (cell) {
+                    const currentText = (plannerData[d] && plannerData[d][r]) ? plannerData[d][r] : "";
+                    const displayDiv = cell.querySelector('.cell-display');
+                    if (displayDiv) {
+                        const shownTextRaw = displayDiv.innerText;
+                        const shouldBeEmpty = (!currentText || currentText.trim() === "");
+                        const isShowingEmpty = (shownTextRaw === "—" || shownTextRaw === "");
+                        if ((shouldBeEmpty && !isShowingEmpty) || (!shouldBeEmpty && shownTextRaw !== currentText)) {
+                            renderSingleCell(d, r, currentText);
+                        }
+                    } else {
+                        renderSingleCell(d, r, currentText);
+                    }
+                    attachDoubleClickHandler(cell, d, r);
+                }
+            }
+        }
+    }
+    
+    function initBusinessPlanner() {
+        loadDataFromStorage();
+        buildFullTable();
+        refreshAllHandlersAndEmptyState();
+        
+        const printBtn = document.getElementById('printTableBtn');
+        if (printBtn) {
+            const clonedBtn = printBtn.cloneNode(true);
+            printBtn.parentNode.replaceChild(clonedBtn, printBtn);
+            clonedBtn.addEventListener('click', () => {
+                window.print();
+            });
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', initBusinessPlanner);
+</script>
+</body>
+</html>
